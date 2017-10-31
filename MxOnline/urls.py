@@ -18,11 +18,12 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 import xadmin
 
-from users.views import login
+from users.views import LoginView
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
 
     url(r"^$", TemplateView.as_view(template_name='index.html'), name='index'),
-    url(r"^login/$", login, name='login')
+    # 注意这里的as_view要交括号，这样就将LoginView类变成了一个试图函数
+    url(r"^login/$", LoginView.as_view(), name='user_login')
 ]

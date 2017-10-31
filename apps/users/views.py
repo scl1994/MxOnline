@@ -7,6 +7,7 @@ from django.db.models import Q    # django的查询多参数为与关系，用Q�
 from django.views.generic.base import View
 
 from .models import UserProfile
+from .forms import LoginForm
 
 
 # Create your views here.
@@ -48,12 +49,20 @@ class LoginView(View):
         return render(request, "login.html", {})
 
     def post(self, request):
-        user_name = request.POST.get("username", "")
-        pass_word = request.POST.get("password", "")
-        # authenticate默认使用用户名认证，如果要定义邮箱，需要自定义
-        user = authenticate(username=user_name, password=pass_word)
-        if user is not None:
-            login(request, user)
-            return render(request, 'index.html')
+        # 使用forms验证用户输入的用户名和密码是否正确，要求forms中定义的名字要与POST中的字段名字相同，
+        # 也就是和前端的input标签的名字对应起来，这样才会取验证对应字段是否正确。
+        login_form = LoginForm(request.POST)
+        if login_form.is_valid():
+            user_name = request.POST.get("username", "")
+            pass_word = request.POST.get("password", "")
+            # authenticate默认使用用户名认证，如果要定义邮箱，需要自定义
+            user = authenticate(username=user_name, password=pass_word)
+            if user is not None:
+                # 使用django自带的login函数实现登录
+                login(request, user)
+                return render(request, 'index.html')
+            # 验证失败，返回到登录页面
+            else:
+                return render(request, "login.html", {'msg': '用户名或密码错误！'})
         else:
-            return render(request, "login.html", {'msg': '用户名或密码错误！'})
+            return render(request, "login.html", {'login_form': login_form})

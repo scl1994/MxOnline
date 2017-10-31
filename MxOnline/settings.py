@@ -51,6 +51,10 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "users.UserProfile"
 
+AUTHENTICATION_BACKENDS = (
+    'users.views.CustomBackend',
+)
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -136,6 +140,7 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
+# 指明静态文件所在的目录
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
