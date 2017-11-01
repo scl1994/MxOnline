@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 import xadmin
 
-from users.views import LoginView, RegisterView, ActiveUserView
+from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
@@ -30,5 +30,9 @@ urlpatterns = [
     # 下面时请求验证码图片的请求，是django-simple-captcha模块配置的
     url(r'^captcha/', include('captcha.urls')),
     # 使用了动态变化的url语法，(?P<变量名>正则表达式)，用于激活用户帐号
-    url(r'^active/(?P<active_code>.*)/$', ActiveUserView.as_view(), name='user_active')
+    url(r'^active/(?P<active_code>.*)/$', ActiveUserView.as_view(), name='user_active'),
+    url(r"^forget/$", ForgetPwdView.as_view(), name='forget_pwd'),
+    url(r'^reset/(?P<reset_code>.*)/$', ResetView.as_view(), name='reset_pwd'),
+    url(r"^modify_pwd/$", ModifyPwdView.as_view(), name='modify_pwd')
+
 ]

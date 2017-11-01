@@ -150,7 +150,7 @@ STATICFILES_DIRS = (
 # 配置邮件发送相关信息
 EMAIL_HOST = 'smtp.sina.com'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER") or 'sclfri@sina.com'
+EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD") or '199403161451scl+'
 EMAIL_USE_TLS = False
-EMAIL_FROM = os.environ.get("DJANGO_EMAIL_FROM")
+EMAIL_FROM = os.environ.get("DJANGO_EMAIL_FROM") or 'sclfri@sina.com'

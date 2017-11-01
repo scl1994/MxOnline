@@ -3,12 +3,12 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.backends import ModelBackend
-from django.db.models import Q    # django的查询多参数为与关系，用Q可改成或关系
+from django.db.models import Q  # django的查询多参数为与关系，用Q可改成或关系
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
 
 from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, ForgetPwdForm, ModifyPwdForm
 from utils.email_send import send_register_mail
 
 
@@ -38,6 +38,8 @@ class RegisterView(View):
         register_form = RegisterForm(request.POST)
         if register_form.is_valid():
             user_name = request.POST.get("email", "")
+            if UserProfile.objects.filter(email=user_name):
+                return render(request, 'register.html', {"msg": '用户已经存在', "register_form": register_form})
             pass_word = request.POST.get("password", "")
             user_profile = UserProfile()
             user_profile.username = user_name
@@ -64,12 +66,21 @@ class ActiveUserView(View):
         if all_records:
             for record in all_records:
                 # 从记录中取出邮件，找到对应用户，将UserProfile的is_active改为true，激活用户
-                email = record.email
-                user = UserProfile.objects.get(email=email)
-                user.is_active = True
-                # 激活用户后要保存
-                user.save()
-        # 返回登录页面（无论是否激活成功）
+                if record.is_active:
+                    email = record.email
+                    user = UserProfile.objects.get(email=email)
+                    #  将激活链接无效化
+                    record.is_active = False
+                    record.save()
+                    user.is_active = True
+                    # 激活用户后要保存
+                    user.save()
+                else:
+                    return render(request, 'login.html', {'msg': '帐号激活链接已失效，可尝试登录'})
+        else:
+            # 验证失败
+            return render(request, 'active_fail.html')
+        # 验证成功，返回登录页面
         return render(request, 'login.html')
 
 
@@ -100,3 +111,60 @@ class LoginView(View):
                 return render(request, "login.html", {'msg': '用户名或密码错误！'})
         else:
             return render(request, "login.html", {'login_form': login_form})
+
+
+class ForgetPwdView(View):
+    def get(self, request):
+        forget_form = ForgetPwdForm()
+        return render(request, 'forgetpwd.html', {'forget_form': forget_form})
+
+    def post(self, request):
+        forget_form = ForgetPwdForm(request.POST)
+        if forget_form.is_valid():
+            email = request.POST.get('email', '')
+            send_register_mail(email, "forget")
+            return render(request, "send_success.html")
+        else:
+            return render(request, 'forgetpwd.html', {'forget_form': forget_form})
+
+
+# 重置密码（发送邮件）
+class ResetView(View):
+    def get(self, request, reset_code):
+        # 用户点击激活链接，查询验证邮件记录
+        all_records = EmailVerifyRecord.objects.filter(code=reset_code)
+        if all_records:
+            for record in all_records:
+                # 从记录中取出邮件，找到对应用户，将UserProfile的is_active改为true，激活用户
+                if record.is_active:
+                    email = record.email
+                    record.is_active = False
+                    record.save()
+                    return render(request, "password_reset.html", {"email": email})
+                else:
+                    return render(request, 'login.html', {'msg': '密码重置链接已失效，可尝试登录'})
+        else:
+            # 验证失败
+            return render(request, 'active_fail.html')
+        # 验证成功，返回登录页面
+        return render(request, 'login.html')
+
+
+# 修改密码
+class ModifyPwdView(View):
+    def post(self, request):
+        modify_form = ModifyPwdForm(request.POST)
+        if modify_form.is_valid():
+            pwd1 = request.POST.get("password1", '')
+            pwd2 = request.POST.get("password2", '')
+            email = request.POST.get("email", '')
+            if pwd1 != pwd2:
+                return render(request, "password_reset.html", {"email": email, 'msg': '密码不一致！'})
+            user = UserProfile.objects.get(email=email)
+            user.password = make_password(pwd1)
+            user.save()
+
+            return render(request, 'login.html')
+        else:
+            email = request.POST.get("email", '')
+            return render(request, "password_reset.html", {"email": email, "modify_form": modify_form})

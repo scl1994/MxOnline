@@ -37,3 +37,10 @@ def send_register_mail(email, send_type='register'):
         send_status = send_mail(subject=email_title, message=email_body, from_email=EMAIL_FROM, recipient_list=[email])
         if send_status:
             pass
+    elif send_type == 'forget':
+        email_title = 'MxOnline在线密码重置'
+        email_body = "请点击下面的链接重置你的密码： http://127.0.0.1:8000/reset/{0}".format(code)
+
+        send_status = send_mail(subject=email_title, message=email_body, from_email=EMAIL_FROM, recipient_list=[email])
+        if send_status:
+            pass
