@@ -5,9 +5,11 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q    # django的查询多参数为与关系，用Q可改成或关系
 from django.views.generic.base import View
+from django.contrib.auth.hashers import make_password
 
-from .models import UserProfile
-from .forms import LoginForm
+from .models import UserProfile, EmailVerifyRecord
+from .forms import LoginForm, RegisterForm
+from utils.email_send import send_register_mail
 
 
 # Create your views here.
@@ -26,20 +28,49 @@ class CustomBackend(ModelBackend):
             return None
 
 
-# 基于函数实现登录功能
-# def user_login(request):
-#     if request.method == "POST":
-#         user_name = request.POST.get("username", "")
-#         pass_word = request.POST.get("password", "")
-#         # authenticate默认使用用户名认证，如果要定义邮箱，需要自定义
-#         user = authenticate(username=user_name, password=pass_word)
-#         if user is not None:
-#             login(request, user)
-#             return render(request, 'index.html')
-#         else:
-#             return render(request, "login.html", {'msg': '用户名或密码错误！'})
-#     elif request.method == "GET":
-#         return render(request, "login.html", {})
+# 注册
+class RegisterView(View):
+    def get(self, request):
+        register_form = RegisterForm()
+        return render(request, "register.html", {'register_form': register_form})
+
+    def post(self, request):
+        register_form = RegisterForm(request.POST)
+        if register_form.is_valid():
+            user_name = request.POST.get("email", "")
+            pass_word = request.POST.get("password", "")
+            user_profile = UserProfile()
+            user_profile.username = user_name
+            user_profile.email = user_name
+            user_profile.is_active = False
+            # 密码传过来的时明文密码，存储时要变成加密的文本
+            user_profile.password = make_password(pass_word)
+            # 记住保存user信息
+            user_profile.save()
+
+            send_register_mail(user_name, "register")
+            # 注册成功，返回登录页面
+            return render(request, "login.html")
+        else:
+            # 输入的帐号密码未能通过验证，返回注册页面
+            return render(request, 'register.html', {"register_form": register_form})
+
+
+# 用户通过邮箱链接激活账户
+class ActiveUserView(View):
+    def get(self, request, active_code):
+        # 用户点击激活链接，查询验证邮件记录
+        all_records = EmailVerifyRecord.objects.filter(code=active_code)
+        if all_records:
+            for record in all_records:
+                # 从记录中取出邮件，找到对应用户，将UserProfile的is_active改为true，激活用户
+                email = record.email
+                user = UserProfile.objects.get(email=email)
+                user.is_active = True
+                # 激活用户后要保存
+                user.save()
+        # 返回登录页面（无论是否激活成功）
+        return render(request, 'login.html')
 
 
 # 基于类实现登录功能
@@ -50,7 +81,7 @@ class LoginView(View):
 
     def post(self, request):
         # 使用forms验证用户输入的用户名和密码是否正确，要求forms中定义的名字要与POST中的字段名字相同，
-        # 也就是和前端的input标签的名字对应起来，这样才会取验证对应字段是否正确。
+        # 也就是和前端的input标签的name属性对应起来，这样才会取验证对应字段是否正确。
         login_form = LoginForm(request.POST)
         if login_form.is_valid():
             user_name = request.POST.get("username", "")
@@ -58,9 +89,12 @@ class LoginView(View):
             # authenticate默认使用用户名认证，如果要定义邮箱，需要自定义
             user = authenticate(username=user_name, password=pass_word)
             if user is not None:
-                # 使用django自带的login函数实现登录
-                login(request, user)
-                return render(request, 'index.html')
+                if user.is_active:
+                    # 使用django自带的login函数实现登录
+                    login(request, user)
+                    return render(request, 'index.html')
+                else:
+                    return render(request, 'login.html', {'msg': '用户未激活!'})
             # 验证失败，返回到登录页面
             else:
                 return render(request, "login.html", {'msg': '用户名或密码错误！'})
