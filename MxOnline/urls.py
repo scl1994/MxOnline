@@ -16,23 +16,39 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic import TemplateView
+from django.views.static import serve
 import xadmin
 
 from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView
+from organization.views import OrgView
+from MxOnline.settings import MEDIA_ROOT
+
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
 
     url(r"^$", TemplateView.as_view(template_name='index.html'), name='index'),
     # 注意这里的as_view要交括号，这样就将LoginView类变成了一个试图函数
+
     url(r"^login/$", LoginView.as_view(), name='login'),
+
     url(r"^register/$", RegisterView.as_view(), name='register'),
+
     # 下面时请求验证码图片的请求，是django-simple-captcha模块配置的
     url(r'^captcha/', include('captcha.urls')),
+
     # 使用了动态变化的url语法，(?P<变量名>正则表达式)，用于激活用户帐号
     url(r'^active/(?P<active_code>.*)/$', ActiveUserView.as_view(), name='user_active'),
+
     url(r"^forget/$", ForgetPwdView.as_view(), name='forget_pwd'),
+
     url(r'^reset/(?P<reset_code>.*)/$', ResetView.as_view(), name='reset_pwd'),
-    url(r"^modify_pwd/$", ModifyPwdView.as_view(), name='modify_pwd')
+
+    url(r"^modify_pwd/$", ModifyPwdView.as_view(), name='modify_pwd'),
+
+    url(r"^org_list/$", OrgView.as_view(), name='org_list'),
+
+    # 配置上传文件的访问处理函数
+    url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT})
 
 ]

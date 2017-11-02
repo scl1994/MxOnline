@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'operation',
     'xadmin',
     'crispy_forms',
-    'captcha'
+    'captcha',
+    'pure_pagination'
 ]
 
 AUTH_USER_MODEL = "users.UserProfile"
@@ -80,6 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media'
             ],
         },
     },
@@ -154,3 +156,8 @@ EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER") or 'sclfri@sina.com'
 EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD") or '199403161451scl+'
 EMAIL_USE_TLS = False
 EMAIL_FROM = os.environ.get("DJANGO_EMAIL_FROM") or 'sclfri@sina.com'
+
+# 上传文件路径设置，会自动在路径前面加上media/
+MEDIA_URL = '/media/'
+# 设置上传文件存储的根目录，只能有一个
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
