@@ -35,6 +35,7 @@ urlpatterns = [
     url(r"^register/$", RegisterView.as_view(), name='register'),
 
     # 下面时请求验证码图片的请求，是django-simple-captcha模块配置的
+    # 这里有点像flask的蓝本，在每个app下可以定义自己的路由，相同前缀的直接路由到对应app下的url定义中
     url(r'^captcha/', include('captcha.urls')),
 
     # 使用了动态变化的url语法，(?P<变量名>正则表达式)，用于激活用户帐号
@@ -46,7 +47,8 @@ urlpatterns = [
 
     url(r"^modify_pwd/$", ModifyPwdView.as_view(), name='modify_pwd'),
 
-    url(r"^org_list/$", OrgView.as_view(), name='org_list'),
+    # 课程机构url配置
+    url(r'^org/', include('organization.urls', namespace='org')),
 
     # 配置上传文件的访问处理函数
     url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT})
