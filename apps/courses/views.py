@@ -1,9 +1,13 @@
+import json
+
 from django.shortcuts import render
 from django.views.generic import View
+from django.http import HttpResponse
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
-from .models import Course
-from operation.models import UserFavorite
+from .models import Course, CourseResource, Video
+from operation.models import UserFavorite, CourseComments, UserCourse
+from django.contrib.auth.mixins import LoginRequiredMixin   # 用来为视图函数检测是否登录
 
 
 # Create your views here.
@@ -72,4 +76,114 @@ class CourseDetailView(View):
             'relative_courses': relative_courses,
             'has_fav_course': has_fav_course,
             'has_fav_org': has_fav_org
+        })
+
+
+class CourseInfoView(LoginRequiredMixin, View):
+    """课程章节信息"""
+    def get(self, request, course_id):
+        course = Course.objects.get(id=int(course_id))
+
+        # 查询用户是否已经关联了该课程
+        if_courses = UserCourse.objects.filter(user=request.user, course=course)
+        if not if_courses:
+            # 没有关联，创建关联,课程的学习人数加一
+            course.students += 1
+            course.save()
+            u = UserCourse(user=request.user, course=course)
+            u.save()
+
+        # 取出所有学过该课程的用户，查询他们的id，找到他们还学习了那些课程
+        user_courses = UserCourse.objects.filter(course=course)
+        user_ids = [user_course.user.id for user_course in user_courses]
+        # 这里user_id表示外键的id，后面的__in表示传进来的时个列表
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        # 取出所有课程的id
+        course_ids = [i.course.id for i in all_user_courses]
+        relative_courses = Course.objects.filter(id__in=course_ids).order_by('-click_nums')[:5]
+
+        all_resources = CourseResource.objects.filter(course=course)
+        return render(request, 'course-video.html', {
+            'course': course,
+            'course_resources': all_resources,
+            'relative_courses': relative_courses
+        })
+
+
+class CommentsView(LoginRequiredMixin, View):
+    # 跳转到评论页面
+    def get(self, request, course_id):
+        course = Course.objects.get(id=int(course_id))
+        all_comments = CourseComments.objects.filter(course=course)
+        all_resources = CourseResource.objects.filter(course=course)
+
+        user_courses = UserCourse.objects.filter(course=course)
+        user_ids = [user_course.user.id for user_course in user_courses]
+        # 这里user_id表示外键的id，后面的__in表示传进来的时个列表
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        # 取出所有课程的id
+        course_ids = [i.course.id for i in all_user_courses]
+        relative_courses = Course.objects.filter(id__in=course_ids).order_by('-click_nums')[:5]
+
+        return render(request, 'course-comment.html', {
+            'course': course,
+            'all_comments': all_comments,
+            'course_resources': all_resources,
+            'relative_courses': relative_courses
+        })
+
+
+class AddCommentsView(View):
+    # 用户用ajax添加评论
+    def post(self, request):
+        if not request.user.is_authenticated():
+            return HttpResponse(json.dumps({'status': 'fail', 'msg': '用户未登录'}),
+                                content_type='application/json')
+
+        course_id = request.POST.get('course_id', 0)
+        comments = request.POST.get('comments', '')
+        if int(course_id) > 0 and comments:
+            course_comments = CourseComments()
+            # 注意在CourseComments中course是个外键，所以在给他传值时要传Course对象
+            course = Course.objects.get(id=int(course_id))
+            course_comments.course = course
+            course_comments.comments = comments
+            course_comments.user = request.user
+            course_comments.save()
+            return HttpResponse(json.dumps({'status': 'success', 'msg': '添加成功'}),
+                                content_type='application/json')
+        else:
+            return HttpResponse(json.dumps({'status': 'fail', 'msg': '添加失败'}),
+                                content_type='application/json')
+
+
+class VideoPlayView(View):
+    """视频播放页面"""
+    def get(self, request, video_id):
+        video = Video.objects.get(id=int(video_id))
+        course = video.lesson.course
+        # 查询用户是否已经关联了该课程
+        if_courses = UserCourse.objects.filter(user=request.user, course=course)
+        if not if_courses:
+            # 没有关联，创建关联
+            course.students += 1
+            course.save()
+            u = UserCourse(user=request.user, course=course)
+            u.save()
+
+        # 取出所有学过该课程的用户，查询他们的id，找到他们还学习了那些课程
+        user_courses = UserCourse.objects.filter(course=course)
+        user_ids = [user_course.user.id for user_course in user_courses]
+        # 这里user_id表示外键的id，后面的__in表示传进来的时个列表
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        # 取出所有课程的id
+        course_ids = [i.course.id for i in all_user_courses]
+        relative_courses = Course.objects.filter(id__in=course_ids).order_by('-click_nums')[:5]
+
+        all_resources = CourseResource.objects.filter(course=course)
+        return render(request, 'course-play.html', {
+            'course': course,
+            'course_resources': all_resources,
+            'relative_courses': relative_courses,
+            'video': video
         })
