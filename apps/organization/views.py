@@ -5,6 +5,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.views.generic import View
 from django.http import HttpResponse
+from django.db.models import Q
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import CourseOrg, CityDict, Teacher
@@ -23,6 +24,12 @@ class OrgView(View):
         # 根据点击数排名，取前三个
         hot_orgs = all_orgs.order_by('click_nums')[:3]
         all_cities = CityDict.objects.all()
+
+        # 实现页面顶部的课程机构搜索功能
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            # 在name或desc或detail（使用Q实现或操作）中不区分大小写（i）搜索包含search_keywords的记录
+            all_orgs = all_orgs.filter(Q(name__icontains=search_keywords) | Q(desc__icontains=search_keywords))
 
         # 类别筛选
         category = request.GET.get('ct', '')
@@ -70,6 +77,7 @@ class AddUserAskView(View):
     """
         用户添加咨询
     """
+
     def post(self, request):
         userask_form = UserAskForm(request.POST)
         if userask_form.is_valid():
@@ -85,6 +93,7 @@ class AddUserAskView(View):
 
 class OrgHomeView(View):
     """机构首页"""
+
     def get(self, request, org_id):
         # 用于前端页面判断当前应该凸显那个标签
         current_page = 'home'
@@ -93,7 +102,7 @@ class OrgHomeView(View):
         has_fav = False
         if request.user.is_authenticated():
             if UserFavorite.objects.filter(user=request.user,
-                                                    fav_id=int(course_org.id), fav_type=2):
+                                           fav_id=int(course_org.id), fav_type=2):
                 has_fav = True
         # Course中有个外键指向CourseOrg叫course_org，
         # 在CourseOrg中自动生成一个course_set(类名小写加上_set)反向指向Course
@@ -110,6 +119,7 @@ class OrgHomeView(View):
 
 class OrgCourseView(View):
     """机构课程列表页"""
+
     def get(self, request, org_id):
         current_page = 'course'
         course_org = CourseOrg.objects.get(id=int(org_id))
@@ -129,6 +139,7 @@ class OrgCourseView(View):
 
 class OrgDescView(View):
     """机构介绍页"""
+
     def get(self, request, org_id):
         current_page = 'desc'
         course_org = CourseOrg.objects.get(id=int(org_id))
@@ -146,6 +157,7 @@ class OrgDescView(View):
 
 class OrgTeacherView(View):
     """机构教师列表页"""
+
     def get(self, request, org_id):
         current_page = 'teacher'
         course_org = CourseOrg.objects.get(id=int(org_id))
@@ -165,8 +177,9 @@ class OrgTeacherView(View):
 
 class AddFavView(View):
     """用户收藏"""
+
     def post(self, request):
-        fav_id = request.POST.get('fav_id', 0)   # 为防止int转换时异常，将默认值设为0
+        fav_id = request.POST.get('fav_id', 0)  # 为防止int转换时异常，将默认值设为0
         fav_type = request.POST.get('fav_type', '')
 
         # 这个视图函数不仅可以添加收藏，还要能取消收藏（如果你已经收藏，再次提交表示取消）
@@ -199,8 +212,16 @@ class AddFavView(View):
 
 class TeacherListView(View):
     """课程讲师列表页"""
+
     def get(self, request):
         all_teachers = Teacher.objects.all()
+
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            # 在name或desc或detail（使用Q实现或操作）中不区分大小写（i）搜索包含search_keywords的记录
+            all_teachers = all_teachers.filter(Q(name__icontains=search_keywords) |
+                                               Q(work_company__icontains=search_keywords) |
+                                               Q(work_position__icontains=search_keywords))
 
         # 排序功能
         sort = request.GET.get('sort', '')

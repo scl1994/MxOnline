@@ -6,9 +6,10 @@ from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q  # django的查询多参数为与关系，用Q可改成或关系
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginForm, RegisterForm, ForgetPwdForm, ModifyPwdForm
+from .forms import LoginForm, RegisterForm, ForgetPwdForm, ModifyPwdForm, UploagImageForm
 from utils.email_send import send_register_mail
 
 
@@ -168,3 +169,21 @@ class ModifyPwdView(View):
         else:
             email = request.POST.get("email", '')
             return render(request, "password_reset.html", {"email": email, "modify_form": modify_form})
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    """ 用户个人信息"""
+    def get(self, request):
+        return render(request, 'usercenter-info.html', {
+
+        })
+
+
+class UploadImageView(LoginRequiredMixin, View):
+    """用户修改头像"""
+    def post(self, request):
+        # 这里的upform是一个modelform，通过给intance传入model对象，可直接对image_form进行数据库保存操作，他即是form又是model
+        image_form = UploagImageForm(request.POST, request.FILES, instance=request.user)
+        if image_form.is_valid():
+            image_form.save()
+            pass

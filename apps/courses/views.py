@@ -3,11 +3,12 @@ import json
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse
+from django.db.models import Q
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Course, CourseResource, Video
 from operation.models import UserFavorite, CourseComments, UserCourse
-from django.contrib.auth.mixins import LoginRequiredMixin   # 用来为视图函数检测是否登录
+from django.contrib.auth.mixins import LoginRequiredMixin  # 用来为视图函数检测是否登录
 
 
 # Create your views here.
@@ -18,6 +19,13 @@ class CourseListView(View):
         all_courses = Course.objects.all().order_by('-add_time')
 
         hot_courses = Course.objects.all().order_by('-click_nums')[:3]
+
+        # 实现页面顶部的课程搜索功能
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            # 在name或desc或detail（使用Q实现或操作）中不区分大小写（i）搜索包含search_keywords的记录
+            all_courses = all_courses.filter(Q(name__icontains=search_keywords) | Q(desc__icontains=search_keywords)
+                                             | Q(detail__icontains=search_keywords))
 
         # 课程排序
         sort = request.GET.get('sort', '')
@@ -47,6 +55,7 @@ class CourseListView(View):
 
 class CourseDetailView(View):
     """课程详情页"""
+
     def get(self, request, course_id):
         course = Course.objects.get(id=int(course_id))
 
@@ -81,6 +90,7 @@ class CourseDetailView(View):
 
 class CourseInfoView(LoginRequiredMixin, View):
     """课程章节信息"""
+
     def get(self, request, course_id):
         course = Course.objects.get(id=int(course_id))
 
@@ -159,6 +169,7 @@ class AddCommentsView(View):
 
 class VideoPlayView(View):
     """视频播放页面"""
+
     def get(self, request, video_id):
         video = Video.objects.get(id=int(video_id))
         course = video.lesson.course
