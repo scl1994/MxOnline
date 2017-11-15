@@ -8,10 +8,7 @@ from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Course, CourseResource, Video
 from operation.models import UserFavorite, CourseComments, UserCourse
-from django.contrib.auth.mixins import LoginRequiredMixin  # 用来为视图函数检测是否登录
-
-
-# Create your views here.
+from utils.mixin_utils import LoginRequiredMixin  # 用来为视图函数检测是否登录
 
 
 class CourseListView(View):
