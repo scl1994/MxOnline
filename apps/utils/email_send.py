@@ -44,3 +44,10 @@ def send_register_mail(email, send_type='register'):
         send_status = send_mail(subject=email_title, message=email_body, from_email=EMAIL_FROM, recipient_list=[email])
         if send_status:
             pass
+    elif send_type == 'update_email':
+        email_title = 'MxOnline在线邮箱修改'
+        email_body = "尊敬的用户，您现在使用的时修改邮箱服务，修改邮箱的验证码为：{0}".format(code)
+
+        send_status = send_mail(subject=email_title, message=email_body, from_email=EMAIL_FROM, recipient_list=[email])
+        if send_status:
+            pass

@@ -210,3 +210,15 @@ class UpdatePwdView(View):
             return HttpResponse(json.dumps({'status': 'success'}), content_type='application/json')
         else:
             return HttpResponse(json.dumps(modify_form.errors), content_type='application/json')
+
+
+class SendEmailCodeView(LoginRequiredMixin, View):
+    """向邮箱发送验证码"""
+    def get(self, request):
+        email = request.GET.get('email', '')
+
+        if UserProfile.objects.filter(email=email):
+            return HttpResponse(json.dumps({'email': '邮箱已经存在'}), content_type='application/json')
+        send_register_mail(email, 'update_email')
+
+        return HttpResponse(json.dumps({'status': 'success'}), content_type='application/json')
