@@ -152,10 +152,10 @@ STATICFILES_DIRS = (
 # 配置邮件发送相关信息
 EMAIL_HOST = 'smtp.qq.com'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER") or '1403934978@qq.com'
+EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD") or 'jhbxyfqhxyljhabf'
 EMAIL_USE_SSL = True
-EMAIL_FROM = os.environ.get("DJANGO_EMAIL_FROM")
+EMAIL_FROM = os.environ.get("DJANGO_EMAIL_FROM") or '1403934978@qq.com'
 
 # 上传文件路径设置，会自动在路径前面加上media/
 MEDIA_URL = '/media/'

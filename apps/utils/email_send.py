@@ -21,7 +21,10 @@ def random_str(random_length=8):
 # 用于发送邮件
 def send_register_mail(email, send_type='register'):
     email_record = EmailVerifyRecord()
-    code = random_str(16)
+    length = 16
+    if send_type == 'update_email':
+        length = 6
+    code = random_str(length)
     email_record.code = code
     email_record.email = email
     email_record.send_type = send_type

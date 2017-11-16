@@ -38,7 +38,7 @@ class CourseListView(View):
         except PageNotAnInteger:
             page = 1
 
-        # 每页五个
+        # 每页6个
         p = Paginator(all_courses, 6, request=request)
 
         courses = p.page(page)
