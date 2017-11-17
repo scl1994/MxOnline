@@ -1,9 +1,9 @@
 # coding=utf-8
 import json
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q  # django的查询多参数为与关系，用Q可改成或关系
 from django.views.generic.base import View
@@ -124,6 +124,14 @@ class LoginView(View):
                 return render(request, "login.html", {'msg': '用户名或密码错误！'})
         else:
             return render(request, "login.html", {'login_form': login_form})
+
+
+class LogoutView(View):
+    """用户登出"""
+    def get(self, request):
+        logout(request)
+        from django.core.urlresolvers import reverse
+        return HttpResponseRedirect(reverse('index'))
 
 
 class ForgetPwdView(View):
@@ -316,6 +324,11 @@ class MyMessageView(LoginRequiredMixin, View):
     """我的消息"""
     def get(self, request):
         all_messages = UserMessage.objects.filter(user=request.user.id)
+        #  用户进入消息中心，将所有消息的状态改为已读
+        all_unread_messages = UserMessage.objects.filter(user=request.user.id, has_read=False)
+        for unread_message in all_unread_messages:
+            unread_message.has_read = True
+            unread_message.save()
         # 对个人消息进行分页
         try:
             page = request.GET.get('page', 1)

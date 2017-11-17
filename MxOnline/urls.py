@@ -19,7 +19,8 @@ from django.views.generic import TemplateView
 from django.views.static import serve
 import xadmin
 
-from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView
+from users.views import LoginView, RegisterView, ActiveUserView, \
+    ForgetPwdView, ResetView, ModifyPwdView, LogoutView
 from MxOnline.settings import MEDIA_ROOT
 
 
@@ -30,6 +31,9 @@ urlpatterns = [
     # 注意这里的as_view要交括号，这样就将LoginView类变成了一个试图函数
 
     url(r"^login/$", LoginView.as_view(), name='login'),
+
+    # 退出
+    url(r"^logout/$", LogoutView.as_view(), name='logout'),
 
     url(r"^register/$", RegisterView.as_view(), name='register'),
 
