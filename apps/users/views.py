@@ -2,16 +2,17 @@
 import json
 
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q  # django的查询多参数为与关系，用Q可改成或关系
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
+from django.core.urlresolvers import reverse
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
 from utils.mixin_utils import LoginRequiredMixin
-from .models import UserProfile, EmailVerifyRecord
+from .models import UserProfile, EmailVerifyRecord, Banner
 from .forms import LoginForm, RegisterForm, ForgetPwdForm, ModifyPwdForm, UploagImageForm, UserInfoForm
 from utils.email_send import send_register_mail
 from operation.models import UserCourse, UserFavorite, UserMessage
@@ -116,7 +117,9 @@ class LoginView(View):
                 if user.is_active:
                     # 使用django自带的login函数实现登录
                     login(request, user)
-                    return render(request, 'index.html')
+                    # 注意这里由于首页需要各种数据，如果直接render跳转的首页，页面将缺少各种信息
+                    #  所以应该使用重定向，让处理index的view来处理这个跳转
+                    return HttpResponseRedirect(reverse('index'))
                 else:
                     return render(request, 'login.html', {'msg': '用户未激活!'})
             # 验证失败，返回到登录页面
@@ -130,7 +133,6 @@ class LogoutView(View):
     """用户登出"""
     def get(self, request):
         logout(request)
-        from django.core.urlresolvers import reverse
         return HttpResponseRedirect(reverse('index'))
 
 
@@ -340,3 +342,33 @@ class MyMessageView(LoginRequiredMixin, View):
         return render(request, 'usercenter-message.html', {
             'messages': messages,
         })
+
+
+class IndexView(View):
+    """首页"""
+    def get(self, request):
+        # 取出轮播图
+        all_banners = Banner.objects.all().order_by('index')
+        courses = Course.objects.filter(is_banner=False)[:6]
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
+        course_orgs = CourseOrg.objects.all()[:15]
+        return render(request, 'index.html', {
+            'all_banners': all_banners,
+            'courses': courses,
+            'banner_courses': banner_courses,
+            'course_orgs': course_orgs
+        })
+
+
+def page_not_found(request):
+    # 全局404处理函数
+    response = render_to_response('404.html', {})
+    response.status_code = 404
+    return response
+
+
+def page_error(request):
+    # 全局500处理函数
+    response = render_to_response('500.html', {})
+    response.status_code = 500
+    return response

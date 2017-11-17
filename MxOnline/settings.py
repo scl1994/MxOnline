@@ -28,7 +28,7 @@ SECRET_KEY = 'co7nna1&#c1cbphpppe7hk=#_ipwm@ars5!^xj7!c2mz^3!w@y'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -152,12 +152,14 @@ STATICFILES_DIRS = (
 # 配置邮件发送相关信息
 EMAIL_HOST = 'smtp.qq.com'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER") or '1403934978@qq.com'
-EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD") or 'jhbxyfqhxyljhabf'
+EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_USE_SSL = True
-EMAIL_FROM = os.environ.get("DJANGO_EMAIL_FROM") or '1403934978@qq.com'
+EMAIL_FROM = os.environ.get("DJANGO_EMAIL_FROM")
 
 # 上传文件路径设置，会自动在路径前面加上media/
 MEDIA_URL = '/media/'
 # 设置上传文件存储的根目录，只能有一个
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')

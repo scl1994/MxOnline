@@ -20,16 +20,18 @@ from django.views.static import serve
 import xadmin
 
 from users.views import LoginView, RegisterView, ActiveUserView, \
-    ForgetPwdView, ResetView, ModifyPwdView, LogoutView
-from MxOnline.settings import MEDIA_ROOT
+    ForgetPwdView, ResetView, ModifyPwdView, LogoutView, IndexView
+from MxOnline.settings import MEDIA_ROOT, STATIC_ROOT
 
 
 urlpatterns = [
+    # xadmin后台管理页面
     url(r'^xadmin/', xadmin.site.urls),
 
-    url(r"^$", TemplateView.as_view(template_name='index.html'), name='index'),
-    # 注意这里的as_view要交括号，这样就将LoginView类变成了一个试图函数
+    # 首页
+    url(r"^$", IndexView.as_view(), name='index'),
 
+    # 注意这里的as_view要交括号，这样就将LoginView类变成了一个试图函数
     url(r"^login/$", LoginView.as_view(), name='login'),
 
     # 退出
@@ -56,11 +58,17 @@ urlpatterns = [
     # 配置上传文件的访问处理函数
     url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
 
+    # 在非debug模式下，django不会帮忙处理static文件，需要配置处理url
+    url(r'^static/(?P<path>.*)$', serve, {"document_root": STATIC_ROOT}),
+
     # 课程url配置
     url(r'^course/', include('courses.urls', namespace='course')),
 
     # 用户配置
     url(r'^users/', include('users.urls', namespace='users')),
-
-
 ]
+
+# 全局404页面处理
+handler404 = 'users.views.page_not_found'
+# 全局500页面处理
+handler500 = 'users.views.page_error'
