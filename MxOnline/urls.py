@@ -21,7 +21,7 @@ import xadmin
 
 from users.views import LoginView, RegisterView, ActiveUserView, \
     ForgetPwdView, ResetView, ModifyPwdView, LogoutView, IndexView
-from MxOnline.settings import MEDIA_ROOT, STATIC_ROOT
+from MxOnline.settings import MEDIA_ROOT
 
 
 urlpatterns = [
@@ -59,7 +59,7 @@ urlpatterns = [
     url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
 
     # 在非debug模式下，django不会帮忙处理static文件，需要配置处理url
-    url(r'^static/(?P<path>.*)$', serve, {"document_root": STATIC_ROOT}),
+    # url(r'^static/(?P<path>.*)$', serve, {"document_root": STATIC_ROOT}),
 
     # 课程url配置
     url(r'^course/', include('courses.urls', namespace='course')),

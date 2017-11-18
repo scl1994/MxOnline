@@ -162,4 +162,4 @@ MEDIA_URL = '/media/'
 # 设置上传文件存储的根目录，只能有一个
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')

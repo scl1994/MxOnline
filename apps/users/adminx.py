@@ -2,8 +2,7 @@
 
 import xadmin
 from xadmin import views as xadmin_views
-
-from .models import EmailVerifyRecord, Banner
+from .models import EmailVerifyRecord, Banner, UserProfile
 
 
 # 修改后台可更改主题
@@ -24,12 +23,14 @@ class EmailVerifyRecordAdmin:
     list_display = ['code', 'email', 'send_type', 'send_time']
     search_fields = ['code', 'email', 'send_type']
     list_filter = ['code', 'email', 'send_type', 'send_time']
+    model_icon = 'fa fa-envelope-o'
 
 
 class BannerAdmin:
     list_display = ['title', 'image', 'url', 'index', 'add_time']
     search_fields = ['title', 'image', 'url', 'index']
     list_filter = ['title', 'image', 'url', 'index', 'add_time']
+    model_icon = 'fa fa-picture-o'
 
 
 xadmin.site.register(EmailVerifyRecord, EmailVerifyRecordAdmin)
