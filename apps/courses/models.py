@@ -59,7 +59,8 @@ class Lesson(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.name
+        #  名字要带上课程的名字
+        return str(self.name) + '--' + str(self.course)
 
     def get_lesson_video(self):
         # 获取章节所有视频
@@ -79,7 +80,7 @@ class Video(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.name
+        return str(self.name) + '--' + str(self.lesson)
 
 
 # 课程的文件资源，位于课程下
@@ -94,4 +95,4 @@ class CourseResource(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.name
+        return str(self.name) + '--' + str(self.course)

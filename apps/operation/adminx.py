@@ -20,21 +20,21 @@ class UserAskAdmin:
 
 class CourseCommentsAdmin:
     list_display = ['user', 'course', 'comments', 'add_time']
-    search_fields = ['user', 'course', 'comments']
-    list_filter = ['user__username', 'course', 'comments', 'add_time']
+    search_fields = ['user__username', 'course__name', 'comments']
+    list_filter = ['user__username', 'course__name', 'comments', 'add_time']
     model_icon = 'fa fa-comments-o'
 
 
 class UserFavoriteAdmin:
     list_display = ['user', 'fav_id', 'fav_type', 'add_time']
-    search_fields = ['user', 'fav_id', 'fav_type']
+    search_fields = ['user__username', 'fav_id', 'fav_type']
     list_filter = ['user__username', 'fav_id', 'fav_type', 'add_time']
     model_icon = 'fa fa-heart-o'
 
 
 class UserCourseAdmin:
     list_display = ['user', 'course', 'add_time']
-    search_fields = ['user', 'course']
+    search_fields = ['user__username', 'course__name']
     list_filter = ['user__username', 'course__name', 'add_time']
     model_icon = 'fa fa-id-card'
 
