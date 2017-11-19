@@ -41,6 +41,9 @@ class CourseAdmin:
     # 设置页面刷新间隔时间设置为每30秒或者每60秒
     refresh_times = [30, 60, 90]
 
+    # xadmin中excel导入功能开启
+    import_excel = True
+
     def queryset(self):
         # 只显示非轮播课程
         qs = super(CourseAdmin, self).queryset()
@@ -55,6 +58,13 @@ class CourseAdmin:
             course_org = obj.course_org
             course_org.course_nums = Course.objects.filter(course_org=course_org).count()
             course_org.save()
+
+    def post(self, request, *args, **kwargs):
+        if 'excel' in request.FILES:
+            # 对课程导入的excel可以进行处理，这里不写了
+            pass
+        # 注意，这里最终一定要调用父类的post返回，否则所有的保存操作都会失败
+        return super(CourseAdmin, self).post(request, args, kwargs)
 
 
 class BannerCourseAdmin:

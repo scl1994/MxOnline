@@ -11,17 +11,17 @@
 //检测上传文件的类型
             var imgName = document.all.submit_upload.value;
             var ext,idx;
-            if (imgName == ''){
+            if (imgName === ''){
                 document.all.submit_upload_b.disabled=true;
                 alert("请选择需要上传的 xls 文件!");
                 return;
             } else {
                 idx = imgName.lastIndexOf(".");
-                if (idx != -1){
+                if (idx !== -1){
                     ext = imgName.substr(idx+1).toUpperCase();
                     ext = ext.toLowerCase( );
 {#                    alert("ext="+ext);#}
-                    if (ext != 'xls' && ext != 'xlsx'){
+                    if (ext !== 'xls' && ext !== 'xlsx'){
                         document.all.submit_upload_b.disabled=true;
                         alert("只能上传 .xls 类型的文件!");
 
