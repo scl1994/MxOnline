@@ -35,6 +35,15 @@ class Course(models.Model):
     def get_zj_nums(self):
         # 通过外键查询课程有多少个章节
         return self.lesson_set.all().count()
+    # 这样将章节数统计也可以加入xadmin后台显示
+    get_zj_nums.short_description = "章节数"
+
+    # 点击课程后跳转的页面
+    def go_to(self):
+        from django.utils.safestring import mark_safe
+        return mark_safe("<a href='http://www.baidu.com'>跳转</a>")
+
+    go_to.short_description = "跳转"
 
     def get_learn_users(self):
         # 获取学习用户
@@ -46,6 +55,16 @@ class Course(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BannerCourse(Course):
+    class Meta:
+        verbose_name = '轮播课程'
+        verbose_name_plural = verbose_name
+
+        # 设这了这个参数，就不会生成一张新表， 这里设置这个bannercourse的目地只
+        # 是为了在xadmin中注册一个新的表，在数据库中不必生成一个新表，用Course的就行
+        proxy = True
 
 
 # 课程章节信息，位于课程下
