@@ -35,6 +35,9 @@ class CourseAdmin:
     # 可以在添加新课程的页面同时添加他的章节， 注意LessonInline要定义在CourseAdmin之前，不然报错
     inlines = [LessonInline, CourseResourceInline]
 
+    # 在xadmin中集成djangoUeditor时用到
+    style_fields = {"detail": 'ueditor'}
+
     # 设置页面刷新间隔时间设置为每30秒或者每60秒
     refresh_times = [30, 60, 90]
 
